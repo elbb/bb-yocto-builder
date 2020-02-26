@@ -1,0 +1,25 @@
+# ===================================================
+# meta infos
+# ===================================================
+
+meta:
+  project: bb-buildingblock
+
+# ===================================================
+# alias
+# ===================================================
+
+alias=bb-buildingblock-build:
+  tasks: []
+  annotations:
+    description: "-> build all content (not implemented yet)"
+
+alias=bb-buildingblock-deploy:
+  tasks: []
+  annotations:
+    description: "-> deploy all content (not implemented yet)"
+
+alias=bb-buildingblock-test: 
+  tasks: []
+  annotations: 
+    description: "-> test all content (not implemented yet)"
