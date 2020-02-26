@@ -6,7 +6,7 @@ set -o pipefail  # don't hide errors within pipes
 # check argument count
 if [ -z ${1} ]; then
     echo "no arguments!"
-    exec dobi --filename meta.yaml list
+    dobi --filename meta.yaml list
     exit 1
 fi
 
