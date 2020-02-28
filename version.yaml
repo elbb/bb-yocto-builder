@@ -1,0 +1,36 @@
+# ===================================================
+# mount points
+# ===================================================
+
+mount=mount-buildingblock-gitversion-source-dir:
+  bind: "{fs.projectdir}"
+  path: /git
+  read-only: false # needs to be read/write to work correctly!!!
+
+mount=mount-buildingblock-gitversion-gen-dir:
+  bind: "{fs.projectdir}/gen/gitversion"
+  path: /gen
+  read-only: false
+
+# ===================================================
+# images
+# ===================================================
+
+image=image-buildingblock-gitversion:
+  image: elbb/bb-gitversion
+  tags: ["0.0.1"]
+  pull: once
+
+# ===================================================
+# jobs
+# ===================================================
+
+job=buildingblock-version:
+  use: image-buildingblock-gitversion
+  mounts:
+  - mount-buildingblock-gitversion-source-dir
+  - mount-buildingblock-gitversion-gen-dir
+  env:
+  - "GV_USERID={user.uid}"
+  - "GV_GIT=/git"
+  - "GV_GEN=/gen"
