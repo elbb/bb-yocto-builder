@@ -2,6 +2,12 @@
 # alias
 # ===================================================
 
+alias=bb-buildingblock-version:
+  tasks:
+  - buildingblock-version
+  annotations:
+    description: "-> generate version informations (auto called by dobi.sh)"
+
 alias=bb-buildingblock-build:
   tasks: []
   annotations:

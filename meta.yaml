@@ -6,10 +6,17 @@ meta:
   project: bb-buildingblock
   include:
   - dobi.yaml
+  - version.yaml
 
 # ===================================================
 # alias
 # ===================================================
+
+alias=version:
+  tasks:
+  - bb-buildingblock-version
+  annotations:
+    description: "[alias] bb-buildingblock-version"
 
 alias=build:
   tasks:

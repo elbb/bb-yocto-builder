@@ -18,6 +18,8 @@ By default three dobi resouces are defined (but not implemented):
 these point to the resources defined in dobi.yaml
 the separation between meta.yaml and dobi.yaml is necessary to integrate the building block into another building block via dobi.
 
+version informations are generated automatically from git history by using gitversion (<https://github.com/elbb/bb-gitversion>).
+
 # What is embedded linux building blocks
 
 embedded linux building block's is a project to create reusable and
