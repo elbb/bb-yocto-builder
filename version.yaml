@@ -5,7 +5,7 @@
 mount=mount-buildingblock-gitversion-source-dir:
   bind: "{fs.projectdir}"
   path: /git
-  read-only: false # needs to be read/write to work correctly!!!
+  read-only: false # needs to be read/write to work correctly!
 
 mount=mount-buildingblock-gitversion-gen-dir:
   bind: "{fs.projectdir}/gen/gitversion"
