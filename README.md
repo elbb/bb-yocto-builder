@@ -1,3 +1,4 @@
+<img src="https://raw.githubusercontent.com/elbb/bb-buildingblock/master/.assets/logo.png" height="200">
 
 # embedded linux building block template
 
