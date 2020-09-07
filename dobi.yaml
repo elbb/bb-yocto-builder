@@ -1,4 +1,73 @@
 # ===================================================
+# mount points
+# ===================================================
+mount=mount-yocto-builder-source-dir:
+  bind: "{fs.projectdir}/yocto"
+  path: /yocto
+  read-only: true
+
+mount=mount-yocto-builder-conf-dir:
+  bind: "{fs.projectdir}/yocto-conf"
+  path: /yocto-build/conf
+  read-only: false
+
+mount=mount-yocto-builder-download-dir:
+  bind: "{fs.projectdir}/gen/yocto-download"
+  path: /yocto-download
+  read-only: false
+
+mount=mount-yocto-builder-sstate-dir:
+  bind: "{fs.projectdir}/gen/yocto-sstate"
+  path: /yocto-sstate
+  read-only: false
+
+mount=mount-yocto-builder-build-dir:
+  bind: "{fs.projectdir}/build/yocto-build"
+  path: /yocto-build
+  read-only: false
+
+mount=mount-yocto-builder-deploy-dir:
+  bind: "{fs.projectdir}/gen/yocto-deploy"
+  path: /yocto-deploy
+  read-only: false
+
+
+# ===================================================
+# images
+# ===================================================
+
+image=image-yocto-builder:
+  image: "{env.YOCTO_BUILDER_IMAGE:elbb/bb-yocto-builder}"
+  context: "yocto-builder"
+  tags: ["{env.GitVersion_BranchVersion}"]
+  annotations:
+    description: "-> generate container image with all build dependencies"
+
+# ===================================================
+# jobs
+# ===================================================
+job=build-yocto-shell:
+  use: image-yocto-builder
+  mounts:
+    - mount-yocto-builder-source-dir
+    - mount-yocto-builder-conf-dir
+    - mount-yocto-builder-download-dir
+    - mount-yocto-builder-sstate-dir
+    - mount-yocto-builder-build-dir
+    - mount-yocto-builder-deploy-dir
+  env:
+    - "USER_ID={user.uid}"
+    - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
+  interactive: true
+  command:
+    "bash -c '\
+    source /yocto-build/conf/init-build-env; \
+    bash
+    '"
+  annotations:
+    description: "-> interactive build shell"
+
+# ===================================================
 # alias
 # ===================================================
 
@@ -18,7 +87,7 @@ alias=bb-buildingblock-deploy:
   annotations:
     description: "-> deploy all content (not implemented yet)"
 
-alias=bb-buildingblock-test: 
+alias=bb-buildingblock-test:
   tasks: []
-  annotations: 
+  annotations:
     description: "-> test all content (not implemented yet)"

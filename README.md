@@ -14,6 +14,9 @@ git subtree add --prefix yocto/poky poky dunfell --squash
 git remote add meta-openembedded https://github.com/openembedded/meta-openembedded.git
 git subtree add --prefix yocto/meta-openembedded meta-openembedded dunfell --squash
 
+./dobi.sh build-yocto-shell
+MACHINE=qemuarm bitbake core-image-minimal
+
 ```
 
 ## using dobi for local build
