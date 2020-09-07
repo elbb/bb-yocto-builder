@@ -18,7 +18,7 @@ mount=mount-buildingblock-gitversion-gen-dir:
 
 image=image-buildingblock-gitversion:
   image: elbb/bb-gitversion
-  tags: ["0.1.0"]
+  tags: ["0.6.2"]
   pull: once
 
 # ===================================================
@@ -28,9 +28,9 @@ image=image-buildingblock-gitversion:
 job=buildingblock-version:
   use: image-buildingblock-gitversion
   mounts:
-  - mount-buildingblock-gitversion-source-dir
-  - mount-buildingblock-gitversion-gen-dir
+    - mount-buildingblock-gitversion-source-dir
+    - mount-buildingblock-gitversion-gen-dir
   sources: "./"
   artifact: "gen/gitversion/"
   env:
-  - "USERID={user.uid}"
+    - "USERID={user.uid}"

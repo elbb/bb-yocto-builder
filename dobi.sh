@@ -12,5 +12,8 @@ if [ -z ${1} ]; then
     exit 1
 fi
 
+# load generated version infos
+source gen/gitversion/env/gitversion.env
+
 # execute dobi with meta as default
 exec dobi --filename meta.yaml ${@}

@@ -1,8 +1,20 @@
 <img src="https://raw.githubusercontent.com/elbb/bb-buildingblock/master/.assets/logo.png" height="200">
 
-# embedded linux building block template
+# (e)mbedded (l)inux (b)uilding (b)locks - containerized yocto builder environment
 
-This code serves as a template for the creation of further building blocks with the purpose of giving all blocks a uniform structure and usage.
+This building block provides a way to build your yocto project either locally with dobi or via ci/cd concourse pipeline.
+It contains an example to build a "dunfell" poky/openembedded yocto image.
+
+## dunfell poky/openembedded integration
+
+We
+```sh
+git remote add poky https://git.yoctoproject.org/git/poky
+git subtree add --prefix yocto/poky poky dunfell --squash
+git remote add meta-openembedded https://github.com/openembedded/meta-openembedded.git
+git subtree add --prefix yocto/meta-openembedded meta-openembedded dunfell --squash
+
+```
 
 ## using dobi for local build
 
