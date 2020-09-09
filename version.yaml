@@ -30,7 +30,8 @@ job=buildingblock-version:
   mounts:
     - mount-buildingblock-gitversion-source-dir
     - mount-buildingblock-gitversion-gen-dir
-  sources: "./"
-  artifact: "gen/gitversion/"
+  # disable sources + artifact: its faster to simply compute a new version then to determine if files changed after we build yocto
+  #sources: "./"
+  #artifact: "gen/gitversion/"
   env:
     - "USERID={user.uid}"

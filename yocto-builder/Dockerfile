@@ -1,4 +1,4 @@
-from debian:sid-slim
+from debian:buster-slim
 
 RUN apt-get update \
     && apt-get install -y \
@@ -17,6 +17,7 @@ RUN apt-get update \
       cpio \
       gosu \
       locales \
+      iproute2 \
     && apt-get autoremove \
     && apt-get clean
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen

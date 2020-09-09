@@ -46,7 +46,7 @@ image=image-yocto-builder:
 # ===================================================
 # jobs
 # ===================================================
-job=build-yocto-shell:
+job=build-yocto-shell-interactive:
   use: image-yocto-builder
   mounts:
     - mount-yocto-builder-source-dir
@@ -58,6 +58,8 @@ job=build-yocto-shell:
   env:
     - "USER_ID={user.uid}"
     - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
+    - "POKY_SRC_DIR=/yocto/poky"
+    - "YOCTO_BUILD_DIR=/yocto-build"
   interactive: true
   command:
     "bash -c '\
@@ -66,6 +68,54 @@ job=build-yocto-shell:
     '"
   annotations:
     description: "-> interactive build shell"
+
+job=build-yocto-qemuarm-core-image-minimal:
+  use: image-yocto-builder
+  mounts:
+    - mount-yocto-builder-source-dir
+    - mount-yocto-builder-conf-dir
+    - mount-yocto-builder-download-dir
+    - mount-yocto-builder-sstate-dir
+    - mount-yocto-builder-build-dir
+    - mount-yocto-builder-deploy-dir
+  env:
+    - "USER_ID={user.uid}"
+    - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
+    - "POKY_SRC_DIR=/yocto/poky"
+    - "YOCTO_BUILD_DIR=/yocto-build"
+  interactive: false
+  command:
+    "bash -c '\
+    source /yocto-build/conf/init-build-env; \
+    MACHINE=qemuarm bitbake core-image-minimal
+    '"
+  annotations:
+    description: "-> build yocto target core-image-minimal for qemuarm"
+
+job=run-yocto-qemuarm-core-image-minimal:
+  use: image-yocto-builder
+  mounts:
+    - mount-yocto-builder-source-dir
+    - mount-yocto-builder-conf-dir
+    - mount-yocto-builder-download-dir
+    - mount-yocto-builder-sstate-dir
+    - mount-yocto-builder-build-dir
+    - mount-yocto-builder-deploy-dir
+  env:
+    - "USER_ID={user.uid}"
+    - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
+    - "POKY_SRC_DIR=/yocto/poky"
+    - "YOCTO_BUILD_DIR=/yocto-build"
+  interactive: false
+  privileged: true
+  command:
+    "bash -c '\
+    source /yocto-build/conf/init-build-env; \
+    runqemu qemuarm
+    '"
+  annotations:
+    description: "-> build yocto target core-image-minimal for qemuarm"
+
 
 # ===================================================
 # alias

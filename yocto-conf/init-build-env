@@ -1,4 +1,4 @@
-source /yocto/poky/oe-init-build-env /yocto-build
+source ${POKY_SRC_DIR}/oe-init-build-env ${YOCTO_BUILD_DIR}
 
 #enable set 'DEPLOY_DIR', 'GitVersionBranch' etc via env var
 export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
@@ -8,6 +8,6 @@ export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
     HW_REV \
     MACHINE \
     SSTATE_DIR"
-export DEPLOY_DIR=/yocto-deploy
-export DL_DIR=/yocto-download
-export SSTATE_DIR=/yocto-sstate
+[[ -z "${DEPLOY_DIR}" ]] && export DEPLOY_DIR=/yocto-deploy
+[[ -z "${DL_DIR}" ]] && export DL_DIR=/yocto-download
+[[ -z "${SSTATE_DIR}" ]] && export SSTATE_DIR=/yocto-sstate
