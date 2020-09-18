@@ -92,7 +92,7 @@ job=build-yocto-qemuarm-core-image-minimal:
   annotations:
     description: "-> build yocto target core-image-minimal for qemuarm"
 
-job=run-yocto-qemuarm-core-image-minimal:
+job=run-yocto-qemuarm-core-image-minimal-interactive:
   use: image-yocto-builder
   mounts:
     - mount-yocto-builder-source-dir
@@ -106,12 +106,12 @@ job=run-yocto-qemuarm-core-image-minimal:
     - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
     - "POKY_SRC_DIR=/yocto/poky"
     - "YOCTO_BUILD_DIR=/yocto-build"
-  interactive: false
+  interactive: true
   privileged: true
-  command:
+  entrypoint:
     "bash -c '\
     source /yocto-build/conf/init-build-env; \
-    runqemu qemuarm
+    runqemu qemuarm nographic
     '"
   annotations:
     description: "-> build yocto target core-image-minimal for qemuarm"

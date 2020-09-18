@@ -4,3 +4,6 @@ gen
 
 #dobi build tool
 .dobi
+
+#ide
+.vscode
