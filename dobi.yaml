@@ -36,18 +36,18 @@ mount=mount-yocto-builder-deploy-dir:
 # images
 # ===================================================
 
-image=image-yocto-builder:
+image=bb-yocto-builder-buildimage:
   image: "{env.YOCTO_BUILDER_IMAGE:elbb/bb-yocto-builder}"
   context: "yocto-builder"
   tags: ["{env.GitVersion_BranchVersion}"]
   annotations:
-    description: "-> generate container image with all build dependencies"
+    description: "-> generate container image with all yocto build dependencies"
 
 # ===================================================
 # jobs
 # ===================================================
-job=build-yocto-shell-interactive:
-  use: image-yocto-builder
+job=bb-yocto-builder-interactive-build-shell:
+  use: bb-yocto-builder-buildimage
   mounts:
     - mount-yocto-builder-source-dir
     - mount-yocto-builder-conf-dir
@@ -69,8 +69,8 @@ job=build-yocto-shell-interactive:
   annotations:
     description: "-> interactive build shell"
 
-job=build-yocto-qemuarm-core-image-minimal:
-  use: image-yocto-builder
+job=bb-yocto-builder-build-qemuarm-core-image-minimal:
+  use: bb-yocto-builder-buildimage
   mounts:
     - mount-yocto-builder-source-dir
     - mount-yocto-builder-conf-dir
@@ -92,8 +92,8 @@ job=build-yocto-qemuarm-core-image-minimal:
   annotations:
     description: "-> build yocto target core-image-minimal for qemuarm"
 
-job=run-yocto-qemuarm-core-image-minimal-interactive:
-  use: image-yocto-builder
+job=bb-yocto-builder-run-yocto-qemuarm-core-image-minimal-interactive:
+  use: bb-yocto-builder-buildimage
   mounts:
     - mount-yocto-builder-source-dir
     - mount-yocto-builder-conf-dir
@@ -121,23 +121,23 @@ job=run-yocto-qemuarm-core-image-minimal-interactive:
 # alias
 # ===================================================
 
-alias=bb-buildingblock-version:
+alias=bb-yocto-builder-version:
   tasks:
   - buildingblock-version
   annotations:
     description: "-> generate version informations (auto called by dobi.sh)"
 
-alias=bb-buildingblock-build:
-  tasks: []
-  annotations:
-    description: "-> build all content (not implemented yet)"
+# alias=bb-yocto-builder-build:
+#   tasks: []
+#   annotations:
+#     description: "-> build all content (not implemented yet)"
 
-alias=bb-buildingblock-deploy:
-  tasks: []
-  annotations:
-    description: "-> deploy all content (not implemented yet)"
+# alias=bb-yocto-builder-deploy:
+#   tasks: []
+#   annotations:
+#     description: "-> deploy all content (not implemented yet)"
 
-alias=bb-buildingblock-test:
-  tasks: []
-  annotations:
-    description: "-> test all content (not implemented yet)"
+# alias=bb-yocto-builder-test:
+#   tasks: []
+#   annotations:
+#     description: "-> test all content (not implemented yet)"

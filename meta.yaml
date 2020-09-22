@@ -14,24 +14,24 @@ meta:
 
 alias=version:
   tasks:
-  - bb-buildingblock-version
+  - bb-yocto-builder-version
   annotations:
-    description: "[alias] bb-buildingblock-version"
+    description: "[alias] bb-yocto-builder-version"
 
 alias=build:
   tasks:
-  - bb-buildingblock-build
+  - bb-yocto-builder-build-qemuarm-core-image-minimal
   annotations:
-    description: "[alias] bb-buildingblock-build"
-  
-alias=deploy:
+    description: "[alias] bb-yocto-builder-build-qemuarm-core-image-minimal"
+
+alias=interactive:
   tasks:
-  - bb-buildingblock-deploy
+  - bb-yocto-builder-interactive-build-shell
   annotations:
-    description: "[alias] bb-buildingblock-deploy"
-  
-alias=test: 
+    description: "[alias] bb-yocto-builder-interactive-build-shell"
+
+alias=test:
   tasks:
-  - bb-buildingblock-test
-  annotations: 
-    description: "[alias] bb-buildingblock-test"
+  - bb-yocto-builder-run-yocto-qemuarm-core-image-minimal-interactive
+  annotations:
+    description: "[alias] bb-yocto-builder-run-yocto-qemuarm-core-image-minimal-interactive"
