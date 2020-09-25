@@ -1,10 +1,10 @@
 source ${POKY_SRC_DIR}/oe-init-build-env ${YOCTO_BUILD_DIR}
 
-#enable set 'DEPLOY_DIR', 'GitVersionBranch' etc via env var
+#enable set 'DEPLOY_DIR', 'GitVersion_BranchVersion' etc via env var
 export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
     DEPLOY_DIR \
     DL_DIR \
-    GitVersionBranch \
+    GitVersion_BranchVersion \
     HW_REV \
     MACHINE \
     SSTATE_DIR"
