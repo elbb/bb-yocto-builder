@@ -109,7 +109,6 @@ jobs:
               tag_as_latest: ((bb_release_as_latest))
               tag_file: s3-gitversion/gitversion/plain/BranchVersion
 
-
   - name: Build yocto image
     public: true
     plan:
@@ -148,6 +147,7 @@ jobs:
                 export YOCTO_BUILD_DIR=$(pwd)/yocto-build;
                 chown ${USER_ID}:${USER_ID} ${DEPLOY_DIR} ${DL_DIR} ${SSTATE_DIR} ${YOCTO_BUILD_DIR};
                 entrypoint.sh bash -c "
+                source ./s3-gitversion/gitversion/env/gitversion.env;
                 source ./source/yocto-conf/init-build-env;
                 MACHINE=qemuarm bitbake core-image-minimal
                 "
