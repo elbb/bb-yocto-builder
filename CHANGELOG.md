@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - concourse environment for ci/cd builds
+- yocto-builder docker image
+- dobi jobs to interactively build, build qemu-arm target, run qemu-arm target
 
 ## [0.1.0] - 2020-03-29
 
