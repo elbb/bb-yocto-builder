@@ -53,7 +53,7 @@ In `./yocto-conf` you find a preconfigured yocto `local.conf` + `bblayers.conf` 
 
 To start an interactive build shell, run \
 ```bash
-./dobi.sh build-yocto-shell-interactive
+./dobi.sh interactive
 ```
 E.g. to build [`core-image-minimal`](https://wiki.yoctoproject.org/wiki/Image_Recipes#core-image-minimal) for target `qemuarm`, type:
 ```bash
@@ -74,6 +74,33 @@ Upload the pipeline file with fly:
     $ fly -t <target> set-pipeline -n -p bb-yocto-builder -l ci/config.yaml -l ci/credentials.yaml -c pipeline.yaml
 
 After successfully uploading the pipeline to concourse CI login and unpause it. After that the pipeline should be triggered by new commits on the master branch (or new tags if enabled in `pipeline.yaml`).
+
+# Troubleshooting
+
+## Yocto build returns filesystem ERROR
+
+```bash
+ERROR: No space left on device or exceeds fs.inotify.max_user_watches?
+```
+Check `inotify.max_user_watches` with:
+```bash
+sysctl -n fs.inotify.max_user_watches
+```
+When this limit is not enough to monitor all files inside a directory, the limit must be increased for Listen to work properly.
+
+You can set a new limit temporary with:
+
+```bash
+sudo sysctl fs.inotify.max_user_watches=524288
+sudo sysctl -p
+```
+
+If you like to make your limit permanent, use:
+
+```bash
+echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
 
 # What is embedded linux building blocks
 

@@ -3,7 +3,7 @@
 # ===================================================
 
 meta:
-  project: bb-buildingblock
+  project: bb-yocto-builder
   include:
   - dobi.yaml
   - version.yaml
