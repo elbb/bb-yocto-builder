@@ -83,7 +83,7 @@ job=bb-yocto-builder-build-qemuarm-core-image-minimal:
     - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
     - "POKY_SRC_DIR=/yocto/poky"
     - "YOCTO_BUILD_DIR=/yocto-build"
-  interactive: false
+  interactive: true
   command:
     "bash -c '\
     source /yocto-build/conf/init-build-env; \
