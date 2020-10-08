@@ -6,4 +6,4 @@
 	url = https://git.yoctoproject.org/git/poky
 [submodule "yocto/meta-elbb"]
 	path = yocto/meta-elbb
-	url = git@github.com:elbb/meta-elbb.git
+	url = https://github.com/elbb/meta-elbb.git
