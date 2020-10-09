@@ -1,0 +1,153 @@
+resources:
+  - name: source
+    type: git
+    source:
+      uri: ((git_source))
+      private_key: ((privatekey))
+      branch: ((git_branch))
+      skip_ssl_verification: ((git_skip_ssl_verification))
+
+  - name: image-bb-gitversion-tool
+    type: docker-image
+    source:
+      repository: elbb/bb-gitversion
+      tag: ((bb_gitversion_version))
+
+  - name: s3-gitversion
+    type: s3
+    source:
+      bucket: ((bb_name))
+      endpoint: ((s3_endpoint))
+      regexp: gitversion/gitversion-(.*).tar.gz
+      access_key_id: ((s3_access_key))
+      secret_access_key: ((s3_secret_key))
+      disable_ssl: ((s3_skip_ssl_verification))
+
+  - name: image-aws-cli
+    type: docker-image
+    source:
+      repository: amazon/aws-cli
+      tag: 2.0.22
+
+  - name: image-((bb_name))
+    type: docker-image
+    source:
+      repository: ((bb_docker_namespace))/((bb_name))
+      username: ((registry_user))
+      password: ((registry_password))
+      insecure_registries: ((bb_insecure_registries))
+
+jobs:
+  - name: Generate gitversion and put it on S3
+    public: true
+    plan:
+      - in_parallel:
+          - get: image-bb-gitversion-tool
+          - get: source
+            trigger: true
+          - get: image-aws-cli
+      - task: Generate version
+        image: image-bb-gitversion-tool
+        config:
+          platform: linux
+          inputs:
+            - name: source
+          outputs:
+            - name: gitversion
+          run:
+            path: /bin/bash
+            args:
+              - -exc
+              - |
+                entrypoint.sh &&
+                jq empty gitversion/json/gitversion.json &&
+                cat gitversion/json/gitversion.json &&
+                tar cvfz gitversion/gitversion-$(cat gitversion/plain/BranchVersion).tar.gz gitversion/*
+          params:
+            GIT_PATH: source
+            GEN_PATH: gitversion
+      - task: Check/Create bucket for ((bb_name)) on S3
+        image: image-aws-cli
+        config:
+          platform: linux
+          run:
+            path: /bin/bash
+            args:
+              - -xc
+              - |
+                mkdir -p ~/.aws
+                # hide setting credentials in plain text in concourse ui
+                set +x
+                export TERM="xterm-256color"
+                echo "[default]" > ~/.aws/credentials
+                echo "aws_access_key_id=((s3_access_key))" >> ~/.aws/credentials
+                echo "aws_secret_access_key=((s3_secret_key))" >> ~/.aws/credentials
+                set -x
+                # check if bucket exists on s3 endpoint. If not create one
+                aws --endpoint-url ((s3_endpoint)) s3api head-bucket --bucket ((bb_name)) 2> /dev/null
+                if [ $? != 0 ]; then aws s3 mb s3://((bb_name)) --endpoint-url ((s3_endpoint)); fi
+      - put: s3-gitversion
+        params:
+          file: gitversion/gitversion-*.tar.gz
+          acl: public-read
+
+  - name: Create docker image for ((bb_name)) and push it
+    public: true
+    plan:
+      - in_parallel:
+          - get: source
+          - get: s3-gitversion
+            passed: [Generate gitversion and put it on S3]
+            trigger: true
+            params:
+              unpack: true
+      - in_parallel:
+          - put: image-((bb_name))
+            params:
+              build: source/yocto-builder
+              dockerfile: source/yocto-builder/Dockerfile
+              tag_as_latest: ((bb_release_as_latest))
+              tag_file: s3-gitversion/gitversion/plain/BranchVersion
+
+  - name: Build yocto image
+    public: true
+    plan:
+      - in_parallel:
+          - get: image-((bb_name))
+            passed: [Create docker image for ((bb_name)) and push it]
+            trigger: true
+          - get: source
+          - get: s3-gitversion
+            passed: [Generate gitversion and put it on S3]
+            params:
+              unpack: true
+      - task: Build yocto image
+        image: image-((bb_name))
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: s3-gitversion
+          outputs:
+            - name: yocto-build
+            - name: yocto-deploy
+          caches:
+            - path: yocto-download
+            - path: yocto-sstate
+          run:
+            path: /bin/bash
+            args:
+              - -exc
+              - |
+                export DEPLOY_DIR=$(pwd)/yocto-deploy;
+                export DL_DIR=$(pwd)/yocto-download;
+                export POKY_SRC_DIR=$(pwd)/source/yocto/poky;
+                export SSTATE_DIR=$(pwd)/yocto-sstate;
+                export USER_ID=1000;
+                export YOCTO_BUILD_DIR=$(pwd)/yocto-build;
+                chown ${USER_ID}:${USER_ID} ${DEPLOY_DIR} ${DL_DIR} ${SSTATE_DIR} ${YOCTO_BUILD_DIR};
+                entrypoint.sh bash -c "
+                source ./s3-gitversion/gitversion/env/gitversion.env;
+                source ./source/yocto-conf/init-build-env;
+                MACHINE=qemuarm bitbake core-image-minimal
+                "

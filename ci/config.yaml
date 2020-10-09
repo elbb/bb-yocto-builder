@@ -1,0 +1,41 @@
+---
+# Building block config
+# -----------------------------------------------------------------------------
+## Specifies the name of the building block
+bb_name: bb-yocto-builder
+## Specify the namespace for the building block image. This gets prefixed before <prefix>/<bb_name>
+### example: bb_docker_namespace: "registry:5000/elbb" results in using "registry:5000/elbb/<bb_name>"
+### "elbb" means using the docker hub, e.g. "elbb/<bb-name>"
+bb_docker_namespace: "elbb"
+## Specifies insecure docker registries, format "host:port" or "ip:port"
+bb_insecure_registries: []
+## Specify if 'latest' tags are built for `git_branch`
+bb_release_as_latest: true
+
+## Specifies the version used for bb-gitversion
+bb_gitversion_version: 0.6.2
+
+# Git config
+# -----------------------------------------------------------------------------
+## Specify the git repository to work with
+git_source: git@github.com:elbb/bb-yocto-builder.git
+## Specify the git branch to work with
+git_branch: master
+## This enables/disables ssl verification of the git resource
+git_skip_ssl_verification: false
+
+# S3 config
+# -----------------------------------------------------------------------------
+## Specify the S3 endpoint URI
+s3_endpoint: http://minio:9000
+## This enables/disables the ssl verification for the S3 endpoint
+s3_skip_ssl_verification: true
+
+# Conan config
+# -----------------------------------------------------------------------------
+## Specify the conan artifactory-cpp-ce URI
+conan_remote: http://artifactory-cpp-ce:8082/artifactory/api/conan/conan-local
+conan_ssl_verification: False
+
+# Codechecker config
+codechecker_url: http://codechecker-web:8001/Default
