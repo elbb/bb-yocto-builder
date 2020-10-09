@@ -51,6 +51,8 @@ If you add additional or modify layers, you have to adapt `./yocto-conf/bblayers
 
 In `./yocto-conf` you find a preconfigured yocto `local.conf` + `bblayers.conf` you can use as starting point for your image configuration.
 
+If you want to forward environment variables to bitbake, edit `./yocto-conf/init-build-env` and adapt `BB_ENV_EXTRAWHITE`.
+
 To start an interactive build shell, run \
 ```bash
 ./dobi.sh interactive

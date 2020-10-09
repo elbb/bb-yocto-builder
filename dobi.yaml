@@ -31,11 +31,9 @@ mount=mount-yocto-builder-deploy-dir:
   path: /yocto-deploy
   read-only: false
 
-
 # ===================================================
 # images
 # ===================================================
-
 image=bb-yocto-builder-buildimage:
   image: "{env.YOCTO_BUILDER_IMAGE:elbb/bb-yocto-builder}"
   context: "yocto-builder"
@@ -114,8 +112,7 @@ job=bb-yocto-builder-run-yocto-qemuarm-core-image-minimal-interactive:
     runqemu qemuarm nographic
     '"
   annotations:
-    description: "-> build yocto target core-image-minimal for qemuarm"
-
+    description: "-> run qemuarm-core-image-minimal"
 
 # ===================================================
 # alias
