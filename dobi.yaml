@@ -31,6 +31,15 @@ mount=mount-yocto-builder-deploy-dir:
   path: /yocto-deploy
   read-only: false
 
+mount=mount-git-dir:
+  bind : "{fs.projectdir}/.git"
+  path: /.git
+  read-only: true
+
+mount=mount-ssh-dir:
+  bind: "{user.home}/.ssh"
+  path: /home/user/.ssh
+
 # ===================================================
 # images
 # ===================================================
@@ -53,6 +62,8 @@ job=bb-yocto-builder-interactive-build-shell:
     - mount-yocto-builder-sstate-dir
     - mount-yocto-builder-build-dir
     - mount-yocto-builder-deploy-dir
+    - mount-git-dir
+    - mount-ssh-dir
   env:
     - "USER_ID={user.uid}"
     - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
@@ -76,6 +87,8 @@ job=bb-yocto-builder-build-qemuarm-core-image-minimal:
     - mount-yocto-builder-sstate-dir
     - mount-yocto-builder-build-dir
     - mount-yocto-builder-deploy-dir
+    - mount-git-dir
+    - mount-ssh-dir
   env:
     - "USER_ID={user.uid}"
     - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
