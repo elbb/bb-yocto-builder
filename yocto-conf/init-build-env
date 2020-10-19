@@ -7,7 +7,8 @@ export BB_ENV_EXTRAWHITE="${BB_ENV_EXTRAWHITE} \
     GitVersion_BranchVersion \
     HW_REV \
     MACHINE \
-    SSTATE_DIR"
+    SSTATE_DIR \
+    SSTATE_MIRRORS"
 [[ -z "${DEPLOY_DIR}" ]] && export DEPLOY_DIR=/yocto-deploy
 [[ -z "${DL_DIR}" ]] && export DL_DIR=/yocto-download
 [[ -z "${SSTATE_DIR}" ]] && export SSTATE_DIR=/yocto-sstate

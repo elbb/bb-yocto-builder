@@ -1,9 +1,11 @@
 #general
 build
 gen
+local.env
 
 #dobi build tool
 .dobi
 
 #ide
-.vscode
+.vscode/*
+!.vscode/settings.json

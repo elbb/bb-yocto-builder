@@ -13,12 +13,12 @@ bb_insecure_registries: []
 bb_release_as_latest: true
 
 ## Specifies the version used for bb-gitversion
-bb_gitversion_version: 0.6.2
+bb_gitversion_version: 0.7.0
 
 # Git config
 # -----------------------------------------------------------------------------
 ## Specify the git repository to work with
-git_source: git@github.com:elbb/bb-yocto-builder.git
+git_source: https://github.com/elbb/bb-yocto-builder.git
 ## Specify the git branch to work with
 git_branch: master
 ## This enables/disables ssl verification of the git resource

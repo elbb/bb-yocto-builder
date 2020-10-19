@@ -1,3 +1,10 @@
+resource_types:
+  - name: email
+    type: docker-image
+    source:
+      repository: pcfseceng/email-resource
+      tag: 1.0.19
+
 resources:
   - name: source
     type: git
@@ -37,9 +44,36 @@ resources:
       password: ((registry_password))
       insecure_registries: ((bb_insecure_registries))
 
+  - name: send-an-email
+    type: email
+    source:
+      smtp:
+        host: ((email_smtp_host_url))
+        port: ((email_smtp_port))
+        anonymous: ((email_smtp_anonymous))
+        username: ((email_smtp_user))
+        password: ((email_smtp_pw))
+        skip_ssl_validation: ((email_smtp_skip_ssl_validation))
+        ca_cert: ((email_smtp_ca_cert))
+        host_origin: ((email_smtp_host_origin))
+        login_auth: ((email_smtp_login_auth))
+      from:  ((email_from))
+      to: ((email_to))
+
 jobs:
   - name: Generate gitversion and put it on S3
     public: true
+    on_failure:
+      put: send-an-email
+      params:
+        subject_text: "ci ${BUILD_PIPELINE_NAME}: build ${BUILD_ID} failed!"
+        body_text: |
+          Oh no!
+          Build ID: "${BUILD_ID}"
+          Build Name: "${BUILD_NAME}"
+          Build Job Name: "${BUILD_JOB_NAME}"
+          Build Pipeline Name: "${BUILD_PIPELINE_NAME}"
+          ATC External URL: "${ATC_EXTERNAL_URL}"
     plan:
       - in_parallel:
           - get: image-bb-gitversion-tool
@@ -93,6 +127,17 @@ jobs:
 
   - name: Create docker image for ((bb_name)) and push it
     public: true
+    on_failure:
+      put: send-an-email
+      params:
+        subject_text: "ci ${BUILD_PIPELINE_NAME}: build ${BUILD_ID} failed!"
+        body_text: |
+          Oh no!
+          Build ID: "${BUILD_ID}"
+          Build Name: "${BUILD_NAME}"
+          Build Job Name: "${BUILD_JOB_NAME}"
+          Build Pipeline Name: "${BUILD_PIPELINE_NAME}"
+          ATC External URL: "${ATC_EXTERNAL_URL}"
     plan:
       - in_parallel:
           - get: source
@@ -111,6 +156,28 @@ jobs:
 
   - name: Build yocto image
     public: true
+    on_failure:
+      put: send-an-email
+      params:
+        subject_text: "ci ${BUILD_PIPELINE_NAME}: build ${BUILD_ID} failed!"
+        body_text: |
+          Oh no!
+          Build ID: "${BUILD_ID}"
+          Build Name: "${BUILD_NAME}"
+          Build Job Name: "${BUILD_JOB_NAME}"
+          Build Pipeline Name: "${BUILD_PIPELINE_NAME}"
+          ATC External URL: "${ATC_EXTERNAL_URL}"
+    on_success:
+      put: send-an-email
+      params:
+        subject_text: "ci ${BUILD_PIPELINE_NAME}: build ${BUILD_ID} successfully finished"
+        body_text: |
+          Yeah!
+          Build ID: "${BUILD_ID}"
+          Build Name: "${BUILD_NAME}"
+          Build Job Name: "${BUILD_JOB_NAME}"
+          Build Pipeline Name: "${BUILD_PIPELINE_NAME}"
+          ATC External URL: "${ATC_EXTERNAL_URL}"
     plan:
       - in_parallel:
           - get: image-((bb_name))

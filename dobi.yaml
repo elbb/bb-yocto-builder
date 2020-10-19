@@ -1,32 +1,32 @@
 # ===================================================
 # mount points
 # ===================================================
-mount=mount-yocto-builder-source-dir:
+mount=mount-source-dir:
   bind: "{fs.projectdir}/yocto"
   path: /yocto
   read-only: true
 
-mount=mount-yocto-builder-conf-dir:
+mount=mount-conf-dir:
   bind: "{fs.projectdir}/yocto-conf"
   path: /yocto-build/conf
   read-only: false
 
-mount=mount-yocto-builder-download-dir:
-  bind: "{fs.projectdir}/gen/yocto-download"
+mount=mount-download-dir:
+  bind: "{env.BB_YOCTO_DL_DIR}"
   path: /yocto-download
   read-only: false
 
-mount=mount-yocto-builder-sstate-dir:
-  bind: "{fs.projectdir}/gen/yocto-sstate"
+mount=mount-sstate-dir:
+  bind: "{env.BB_YOCTO_SSTATE_DIR}"
   path: /yocto-sstate
   read-only: false
 
-mount=mount-yocto-builder-build-dir:
+mount=mount-build-dir:
   bind: "{fs.projectdir}/build/yocto-build"
   path: /yocto-build
   read-only: false
 
-mount=mount-yocto-builder-deploy-dir:
+mount=mount-deploy-dir:
   bind: "{fs.projectdir}/gen/yocto-deploy"
   path: /yocto-deploy
   read-only: false
@@ -43,25 +43,30 @@ mount=mount-ssh-dir:
 # ===================================================
 # images
 # ===================================================
-image=bb-yocto-builder-buildimage:
-  image: "{env.YOCTO_BUILDER_IMAGE:elbb/bb-yocto-builder}"
+image=buildimage:
+  image: "{env.BB_DOCKER_NAMESPACE}/bb-yocto-builder"
   context: "yocto-builder"
   tags: ["{env.GitVersion_BranchVersion}"]
   annotations:
     description: "-> generate container image with all yocto build dependencies"
 
+image=pulled-buildimage:
+  image: "{env.BB_DOCKER_NAMESPACE}/bb-yocto-builder"
+  tags: ["{env.VERSION_BB_YOCTO_BUILDER}"]
+  pull: once
+
 # ===================================================
 # jobs
 # ===================================================
-job=bb-yocto-builder-interactive-build-shell:
-  use: bb-yocto-builder-buildimage
+job=interactive-build-shell:
+  use: pulled-buildimage
   mounts:
-    - mount-yocto-builder-source-dir
-    - mount-yocto-builder-conf-dir
-    - mount-yocto-builder-download-dir
-    - mount-yocto-builder-sstate-dir
-    - mount-yocto-builder-build-dir
-    - mount-yocto-builder-deploy-dir
+    - mount-source-dir
+    - mount-conf-dir
+    - mount-download-dir
+    - mount-sstate-dir
+    - mount-build-dir
+    - mount-deploy-dir
     - mount-git-dir
     - mount-ssh-dir
   env:
@@ -78,15 +83,24 @@ job=bb-yocto-builder-interactive-build-shell:
   annotations:
     description: "-> interactive build shell"
 
-job=bb-yocto-builder-build-qemuarm-core-image-minimal:
-  use: bb-yocto-builder-buildimage
+job=clean:
+  use: pulled-buildimage
   mounts:
-    - mount-yocto-builder-source-dir
-    - mount-yocto-builder-conf-dir
-    - mount-yocto-builder-download-dir
-    - mount-yocto-builder-sstate-dir
-    - mount-yocto-builder-build-dir
-    - mount-yocto-builder-deploy-dir
+    - mount-build-dir
+    - mount-deploy-dir
+  entrypoint: "bash -c 'rm -rf /yocto-build/* /yocto-deploy/*'"
+  annotations:
+    description: "-> clean yocto build and deploy directory"
+
+job=build-qemuarm-core-image-minimal:
+  use: pulled-buildimage
+  mounts:
+    - mount-source-dir
+    - mount-conf-dir
+    - mount-download-dir
+    - mount-sstate-dir
+    - mount-build-dir
+    - mount-deploy-dir
     - mount-git-dir
     - mount-ssh-dir
   env:
@@ -101,17 +115,17 @@ job=bb-yocto-builder-build-qemuarm-core-image-minimal:
     MACHINE=qemuarm bitbake core-image-minimal
     '"
   annotations:
-    description: "-> build yocto target core-image-minimal for qemuarm"
+    description: "-> build qemuarm core-image-minimal"
 
-job=bb-yocto-builder-run-yocto-qemuarm-core-image-minimal-interactive:
-  use: bb-yocto-builder-buildimage
+job=run-qemuarm-core-image-minimal-interactive:
+  use: pulled-buildimage
   mounts:
-    - mount-yocto-builder-source-dir
-    - mount-yocto-builder-conf-dir
-    - mount-yocto-builder-download-dir
-    - mount-yocto-builder-sstate-dir
-    - mount-yocto-builder-build-dir
-    - mount-yocto-builder-deploy-dir
+    - mount-source-dir
+    - mount-conf-dir
+    - mount-download-dir
+    - mount-sstate-dir
+    - mount-build-dir
+    - mount-deploy-dir
   env:
     - "USER_ID={user.uid}"
     - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
@@ -125,29 +139,4 @@ job=bb-yocto-builder-run-yocto-qemuarm-core-image-minimal-interactive:
     runqemu qemuarm nographic
     '"
   annotations:
-    description: "-> run qemuarm-core-image-minimal"
-
-# ===================================================
-# alias
-# ===================================================
-
-alias=bb-yocto-builder-version:
-  tasks:
-  - buildingblock-version
-  annotations:
-    description: "-> generate version informations (auto called by dobi.sh)"
-
-# alias=bb-yocto-builder-build:
-#   tasks: []
-#   annotations:
-#     description: "-> build all content (not implemented yet)"
-
-# alias=bb-yocto-builder-deploy:
-#   tasks: []
-#   annotations:
-#     description: "-> deploy all content (not implemented yet)"
-
-# alias=bb-yocto-builder-test:
-#   tasks: []
-#   annotations:
-#     description: "-> test all content (not implemented yet)"
+    description: "-> run qemuarm core-image-minimal"
