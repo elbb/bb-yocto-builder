@@ -117,6 +117,15 @@ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 ```
 
+## Setting memory for qemuarm image instance
+
+If you have memory requirements for the running qemuarm image instance in dobi job `run-qemuarm-core-image-minimal-interactive`, you can adapt `QEMUPARAMS` in [local.env](#local-project-variables) , e.g.
+```
+QEMUPARAMS="-m 1024"
+```
+sets the available memory to 1024MB.
+
+
 # What is embedded linux building blocks
 
 embedded linux building blocks is a project to create reusable and

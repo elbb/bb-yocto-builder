@@ -131,12 +131,14 @@ job=run-qemuarm-core-image-minimal-interactive:
     - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
     - "POKY_SRC_DIR=/yocto/poky"
     - "YOCTO_BUILD_DIR=/yocto-build"
+    - "QEMUPARAMS={env.QEMUPARAMS:}"
+    - "BOOTPARAMS={env.BOOTPARAMS:}"
   interactive: true
   privileged: true
   entrypoint:
     "bash -c '\
     source /yocto-build/conf/init-build-env; \
-    runqemu qemuarm nographic
+    runqemu qemuarm nographic qemuparams=\"${QEMUPARAMS}\" bootparams=\"${BOOTPARAMS}\"
     '"
   annotations:
     description: "-> run qemuarm core-image-minimal"
