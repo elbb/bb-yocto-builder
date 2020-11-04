@@ -5,25 +5,25 @@
 This building block provides a way to build your yocto project either locally with dobi or via ci/cd concourse pipeline. In both cases the image is build in a containerized environment.
 It contains an example to build a poky/openembedded yocto image with systemd as system and service manager. It currently uses the long term support yocto release "dunfell".
 
+## Prerequisites
+
+-   [docker](https://docs.docker.com/install)
+-   [dobi](https://github.com/dnephin/dobi) (downloaded if not in `PATH`)
+-   [concourse](https://concourse-ci.org/) (ci/cd)
+
 ## Using dobi for local build
-
-### Prerequisites
-
-* [dobi](https://github.com/dnephin/dobi)
-* [docker](https://docs.docker.com/install)
-* [qemu-user-static](https://github.com/multiarch/qemu-user-static#getting-started)
 
 dobi should only be used via the `dobi.sh` script, because there important variables are set and the right scripts are included.
 
 The following dobi resources are available:
 
 ```sh
-
-./dobi.sh version      #generate version informations (auto called by dobi.sh)
-./dobi.sh build        #build yocto image core-image-minimal for target qemuarm
-./dobi.sh interactive  #start interactive yocto build shell
-./dobi.sh test         #run yocto core-image-minimal for target qemuarm interactively
-
+./dobi.sh build-qemuarm-core-image-minimal              #build qemuarm core-image-minimal
+./dobi.sh buildimage                                    #generate container image with all yocto build dependencies
+./dobi.sh clean                                         #clean yocto build and deploy directory
+./dobi.sh interactive-build-shell                       #run interactive build shell
+./dobi.sh run-qemuarm-core-image-minimal-interactive    #run qemuarm core-image-minimal
+./dobi.sh version                                       #generate version informations (auto called by dobi.sh)
 ```
 The yocto build artefacts `images`, `licenses` and `rpm` are located in `./gen/yocto-deploy`.
 
@@ -38,6 +38,14 @@ will run the yocto `core-image-minimal` for target `qemuarm` in a docker contain
 ```
 poweroff
 ```
+### Default project variables
+
+Edit `./default.env` to set default project variables.
+
+### Local project variables
+
+If you want to override project variables, copy `./local.env.template` to `./local.env` and edit `./local.env` accordingly.<br>
+`./local.env` is ignored by git via `./.gitignore`.
 
 ## How to use this building block to bootstrap your yocto project.
 
@@ -51,6 +59,8 @@ If you add additional or modify layers, you have to adapt `./yocto-conf/bblayers
 
 In `./yocto-conf` you find a preconfigured yocto `local.conf` + `bblayers.conf` you can use as starting point for your image configuration.
 
+If you want to forward environment variables to bitbake, edit `./yocto-conf/init-build-env` and adapt `BB_ENV_EXTRAWHITE`.
+
 To start an interactive build shell, run \
 ```bash
 ./dobi.sh interactive
@@ -59,19 +69,24 @@ E.g. to build [`core-image-minimal`](https://wiki.yoctoproject.org/wiki/Image_Re
 ```bash
 MACHINE=qemuarm bitbake core-image-minimal
 ```
+### Out of tree Yocto `download` or `sstate` directory
+
+To set an out of tree yocto `download` or `sstate` directory, follow "[Local project variables](#local-project-variables)" and set `BB_YOCTO_DL_DIR` and/or `BB_YOCTO_SSTATE_DIR`.
 
 ## Using concourse CI for a CI/CD build
 
 The pipeline file must be uploaded to concourse CI via `fly`.
 Enter the build users ssh private key into the file `ci/credentials.template.yaml` and rename it to `ci/credentials.yaml`.
+Copy the file `ci/email.template.yaml` to `ci/email.yaml` and enter the email server configuration and email addresses.
+For further information how to configure the email notification, see: <https://github.com/pivotal-cf/email-resource>
 
-**Note: `credentials.yaml` is ignored by `.gitignore` and will not be checked in.**
+**Note: `credentials.yaml` and `email.yaml` are ignored by `.gitignore` and will not be checked in.**
 
 In further releases there will be a key value store to keep track of the users credentials.
 Before setting the pipeline you might login first to your concourse instance `fly -t <target> login --concourse-url http://<concourse>:<port>`. See the [fly documentation](https://concourse-ci.org/fly.html) for more help.
 Upload the pipeline file with fly:
 
-    $ fly -t <target> set-pipeline -n -p bb-yocto-builder -l ci/config.yaml -l ci/credentials.yaml -c pipeline.yaml
+    $ fly -t <target> set-pipeline -n -p bb-yocto-builder -l ci/config.yaml -l ci/credentials.yaml -l ci/email.yaml -c pipeline.yaml
 
 After successfully uploading the pipeline to concourse CI login and unpause it. After that the pipeline should be triggered by new commits on the master branch (or new tags if enabled in `pipeline.yaml`).
 
@@ -101,6 +116,15 @@ If you like to make your limit permanent, use:
 echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
 ```
+
+## Setting memory for qemuarm image instance
+
+If you have memory requirements for the running qemuarm image instance in dobi job `run-qemuarm-core-image-minimal-interactive`, you can adapt `QEMUPARAMS` in [local.env](#local-project-variables) , e.g.
+```
+QEMUPARAMS="-m 1024"
+```
+sets the available memory to 1024MB.
+
 
 # What is embedded linux building blocks
 

@@ -1,0 +1,6 @@
+{
+    "files.watcherExclude": {
+        "**/gen/**": true,
+        "**/build/**": true,
+    },
+}

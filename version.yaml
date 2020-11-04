@@ -17,21 +17,26 @@ mount=mount-buildingblock-gitversion-gen-dir:
 # ===================================================
 
 image=image-buildingblock-gitversion:
-  image: elbb/bb-gitversion
-  tags: ["0.6.2"]
+  image: "elbb/bb-gitversion"
+  tags: ["{env.VERSION_BB_GITVERSION}"]
   pull: once
 
 # ===================================================
 # jobs
 # ===================================================
 
-job=buildingblock-version:
+job=version:
   use: image-buildingblock-gitversion
   mounts:
     - mount-buildingblock-gitversion-source-dir
     - mount-buildingblock-gitversion-gen-dir
-  # disable sources + artifact: its faster to simply compute a new version then to determine if files changed after we build yocto
-  #sources: "./"
-  #artifact: "gen/gitversion/"
+  # DISABLED: validating 'sources' and 'artifact' takes longer then generating
+  # version info, because a yocto build generates a lot of files in './gen'.
+  # Unfortunately dobi doesnt support masking subdirectories of 'sources'.
+
+  # sources: "./"
+  # artifact: "gen/gitversion/"
   env:
     - "USERID={user.uid}"
+  annotations:
+    description: "-> generate version informations (auto called by dobi.sh)"

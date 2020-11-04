@@ -1,0 +1,32 @@
+# Email Notification
+# -----------------------------------------------------------------------------
+
+# Required. SMTP Host name
+email_smtp_host_url: smtp_host_url
+# Required. SMTP Port, must be entered as a string
+email_smtp_port: "smtp_port"
+# Optional. Whether or not to require credential. true/false are valid options. If omitted default is false
+email_smtp_anonymous: false
+# Required, Conditionally. Username to authenticate with. Ignored if anonymous: true
+email_smtp_user: smtp_user
+# Required, Conditionally. Password to authenticate with. Ignored if anonymous: true
+email_smtp_pw: smtp_passwort
+# Optional. Whether or not to skip ssl validation. true/false are valid options. If omitted default is false
+email_smtp_skip_ssl_validation: false
+# Optional. Certificates content to verify servers with custom certificates. Only considered if skip_ssl_validation is false.
+email_smtp_ca_cert: |
+  -----BEGIN CERTIFICATE-----
+  MIIEdzCCA1+gAwIBAgINAe5fIi3nG0Ol1GafnjANBgkqhkiG9w0BAQsFADBMMSAw
+  HgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEGA1UEChMKR2xvYmFs
+  ...............
+  GA9uXqsDj4J/okR7/ruByeEuh8aKWgBSmF7oFasKXPKdTbIS9D9FBPKbYvu1quvI
+  /AQsGpQZsvjRJbFu1gU20lhLYYC2PGK8owK23TZjOWglOnuii6MUGwkiMw==
+  -----END CERTIFICATE-----
+# Optional. Host to send Hello from. If not provided localhost is used
+email_smtp_host_origin: localhost
+# Optional. This will enable the flag to use Login Auth for authenticated. true/false are valid options. If omitted default is false
+email_smtp_login_auth: false
+
+email_to: [ "email_address_of receiver_1" ]
+# email_to: [ "email_address_of receiver_1" , "email_address_of receiver_2" ] # syntax for 2 receiver
+email_from: email_address_of_sender

@@ -2,24 +2,25 @@ from debian:buster-slim
 
 RUN apt-get update \
     && apt-get install -y \
-      gawk \
-      wget \
-      git-core \
-      diffstat \
-      unzip \
-      texinfo \
-      gcc-multilib \
       build-essential \
       chrpath \
-      socat \
-      libsdl1.2-dev \
-      xterm \
       cpio \
+      diffstat \
+      gawk \
+      gcc-multilib \
+      git-core \
       gosu \
-      locales \
       iproute2 \
-      sudo \
       iptables \
+      libsdl1.2-dev \
+      locales \
+      socat \
+      sudo \
+      texinfo \
+      tmux\
+      unzip \
+      wget \
+      xterm \
     && apt-get autoremove \
     && apt-get clean
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && /usr/sbin/locale-gen
