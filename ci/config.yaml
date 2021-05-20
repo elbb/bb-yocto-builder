@@ -13,29 +13,14 @@ bb_insecure_registries: []
 bb_release_as_latest: true
 
 ## Specifies the version used for bb-gitversion
-bb_gitversion_version: 0.7.0
+bb_gitversion_version: 0.8.3
 
 # Git config
 # -----------------------------------------------------------------------------
 ## Specify the git repository to work with
 git_source: https://github.com/elbb/bb-yocto-builder.git
 ## Specify the git branch to work with
-git_branch: master
+git_branch: main
+default_branch: main
 ## This enables/disables ssl verification of the git resource
 git_skip_ssl_verification: false
-
-# S3 config
-# -----------------------------------------------------------------------------
-## Specify the S3 endpoint URI
-s3_endpoint: http://minio:9000
-## This enables/disables the ssl verification for the S3 endpoint
-s3_skip_ssl_verification: true
-
-# Conan config
-# -----------------------------------------------------------------------------
-## Specify the conan artifactory-cpp-ce URI
-conan_remote: http://artifactory-cpp-ce:8082/artifactory/api/conan/conan-local
-conan_ssl_verification: False
-
-# Codechecker config
-codechecker_url: http://codechecker-web:8001/Default

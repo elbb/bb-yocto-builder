@@ -86,7 +86,7 @@ In further releases there will be a key value store to keep track of the users c
 Before setting the pipeline you might login first to your concourse instance `fly -t <target> login --concourse-url http://<concourse>:<port>`. See the [fly documentation](https://concourse-ci.org/fly.html) for more help.
 Upload the pipeline file with fly:
 
-    $ fly -t <target> set-pipeline -n -p bb-yocto-builder -l ci/config.yaml -l ci/credentials.yaml -l ci/email.yaml -c pipeline.yaml
+    $ fly -t <target> set-pipeline -n -p bb-yocto-builder -l ci/config.yaml -l ci/credentials.yaml -l ci/email.yaml -c ci/pipeline.yaml
 
 After successfully uploading the pipeline to concourse CI login and unpause it. After that the pipeline should be triggered by new commits on the master branch (or new tags if enabled in `pipeline.yaml`).
 

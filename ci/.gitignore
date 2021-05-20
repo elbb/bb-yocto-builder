@@ -4,3 +4,4 @@ credentials.*.yaml
 config.local.yaml
 email.*.yaml
 !email.template.yaml
+*.sh
