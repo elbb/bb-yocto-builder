@@ -135,6 +135,7 @@ jobs:
                 export USER_ID=1000;
                 export YOCTO_BUILD_DIR=$(pwd)/yocto-build;
                 chown ${USER_ID}:${USER_ID} ${DEPLOY_DIR} ${DL_DIR} ${SSTATE_DIR} ${YOCTO_BUILD_DIR};
+                chown -R ${USER_ID}:${USER_ID} source;
                 entrypoint.sh bash -c "
                 source ./gitversion/env/gitversion.env;
                 source ./source/yocto-conf/init-build-env;
