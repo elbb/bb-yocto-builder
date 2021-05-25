@@ -1,28 +1,8 @@
 # ===================================================
 # mount points
 # ===================================================
-mount=mount-source-dir:
-  bind: "{fs.projectdir}/yocto"
-  path: /yocto
-  read-only: true
-
-mount=mount-conf-dir:
-  bind: "{fs.projectdir}/yocto-conf"
-  path: /yocto-build/conf
-  read-only: false
-
-mount=mount-download-dir:
-  bind: "{env.BB_YOCTO_DL_DIR}"
-  path: /yocto-download
-  read-only: false
-
-mount=mount-sstate-dir:
-  bind: "{env.BB_YOCTO_SSTATE_DIR}"
-  path: /yocto-sstate
-  read-only: false
-
 mount=mount-build-dir:
-  bind: "{fs.projectdir}/build/yocto-build"
+  bind: "{fs.projectdir}/build"
   path: /yocto-build
   read-only: false
 
@@ -31,114 +11,144 @@ mount=mount-deploy-dir:
   path: /yocto-deploy
   read-only: false
 
-mount=mount-git-dir:
-  bind : "{fs.projectdir}/.git"
-  path: /.git
+mount=mount-download-dir:
+  bind: "{env.BB_YOCTO_DL_DIR}"
+  path: /yocto-download
+  read-only: false
+
+mount=mount-kas-dir:
+  bind: "{fs.projectdir}/kas"
+  path: /kas-cfg
   read-only: true
 
 mount=mount-ssh-dir:
   bind: "{user.home}/.ssh"
-  path: /home/user/.ssh
+  path: /builder/.ssh
+
+mount=mount-sstate-dir:
+  bind: "{env.BB_YOCTO_SSTATE_DIR}"
+  path: /yocto-sstate
+  read-only: false
 
 # ===================================================
 # images
 # ===================================================
-image=buildimage:
-  image: "{env.BB_DOCKER_NAMESPACE}/bb-yocto-builder"
-  context: "yocto-builder"
-  tags: ["{env.GitVersion_BranchVersion}"]
-  annotations:
-    description: "-> generate container image with all yocto build dependencies"
-
-image=pulled-buildimage:
-  image: "{env.BB_DOCKER_NAMESPACE}/bb-yocto-builder"
-  tags: ["{env.VERSION_BB_YOCTO_BUILDER}"]
+image=kas:
+  image: "ghcr.io/siemens/kas/kas"
+  tags: ["{env.VERSION_KAS}"]
   pull: once
+
+image=runqemu-kas:
+  image: runqemu-kas
+  context: kas
+  steps: |
+    ARG VERSION_KAS
+    FROM ghcr.io/siemens/kas/kas:$VERSION_KAS
+    RUN apt-get update && apt-get install -y --no-install-recommends iptables sudo && rm -rf /var/lib/apt/lists/*
+    RUN update-alternatives --set iptables /usr/sbin/iptables-legacy;
+  args:
+    VERSION_KAS: "{env.VERSION_KAS}"
 
 # ===================================================
 # jobs
 # ===================================================
 job=interactive-build-shell:
-  use: pulled-buildimage
+  use: kas
   mounts:
-    - mount-source-dir
-    - mount-conf-dir
-    - mount-download-dir
-    - mount-sstate-dir
     - mount-build-dir
     - mount-deploy-dir
-    - mount-git-dir
+    - mount-download-dir
+    - mount-kas-dir
     - mount-ssh-dir
+    - mount-sstate-dir
   env:
+    - "BB_NUMBER_THREADS={env.BB_NUMBER_THREADS}"
+    - "GROUP_ID={user.gid}"
+    - "KAS_CONFIG_DIR=/kas-cfg"
+    - "KAS_WORK_DIR=/yocto-build"
     - "USER_ID={user.uid}"
-    - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
-    - "POKY_SRC_DIR=/yocto/poky"
     - "YOCTO_BUILD_DIR=/yocto-build"
   interactive: true
   command:
     "bash -c '\
-    source /yocto-build/conf/init-build-env; \
-    bash
+      /kas-cfg/kas_config.sh;
+      cd /yocto-build;
+      bash
     '"
   annotations:
     description: "-> interactive build shell"
 
-job=clean:
-  use: pulled-buildimage
-  mounts:
-    - mount-build-dir
-    - mount-deploy-dir
-  entrypoint: "bash -c 'rm -rf /yocto-build/* /yocto-deploy/*'"
-  annotations:
-    description: "-> clean yocto build and deploy directory"
-
 job=build-qemuarm-core-image-minimal:
-  use: pulled-buildimage
+  use: kas
   mounts:
-    - mount-source-dir
-    - mount-conf-dir
-    - mount-download-dir
-    - mount-sstate-dir
     - mount-build-dir
     - mount-deploy-dir
-    - mount-git-dir
+    - mount-download-dir
+    - mount-kas-dir
     - mount-ssh-dir
+    - mount-sstate-dir
   env:
+    - "BB_NUMBER_THREADS={env.BB_NUMBER_THREADS}"
+    - "GROUP_ID={user.gid}"
+    - "KAS_CONFIG_DIR=/kas-cfg"
+    - "KAS_WORK_DIR=/yocto-build"
     - "USER_ID={user.uid}"
-    - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
-    - "POKY_SRC_DIR=/yocto/poky"
     - "YOCTO_BUILD_DIR=/yocto-build"
   interactive: true
   command:
     "bash -c '\
-    source /yocto-build/conf/init-build-env; \
-    MACHINE=qemuarm bitbake core-image-minimal
+      /kas-cfg/kas_config.sh;
+      cd /yocto-build;
+      kas build poky.yaml:qemuarm.yaml
     '"
   annotations:
     description: "-> build qemuarm core-image-minimal"
 
 job=run-qemuarm-core-image-minimal-interactive:
-  use: pulled-buildimage
+  use: runqemu-kas
   mounts:
-    - mount-source-dir
-    - mount-conf-dir
-    - mount-download-dir
-    - mount-sstate-dir
     - mount-build-dir
     - mount-deploy-dir
+    - mount-kas-dir
   env:
-    - "USER_ID={user.uid}"
-    - "GitVersion_BranchVersion={env.GitVersion_BranchVersion}"
-    - "POKY_SRC_DIR=/yocto/poky"
-    - "YOCTO_BUILD_DIR=/yocto-build"
-    - "QEMUPARAMS={env.QEMUPARAMS:}"
     - "BOOTPARAMS={env.BOOTPARAMS:}"
+    - "KAS_CONFIG_DIR=/kas-cfg"
+    - "KAS_WORK_DIR=/yocto-build"
+    - "QEMUPARAMS={env.QEMUPARAMS:}"
+    - "YOCTO_BUILD_DIR=/yocto-build"
   interactive: true
   privileged: true
   entrypoint:
-    "bash -c '\
-    source /yocto-build/conf/init-build-env; \
-    runqemu qemuarm nographic qemuparams=\"${QEMUPARAMS}\" bootparams=\"${BOOTPARAMS}\"
-    '"
+    bash -cxve "
+      /kas-cfg/kas_config.sh;
+      cd /yocto-build;
+      kas shell poky.yaml:qemuarm.yaml -c 'runqemu qemuarm nographic qemuparams=\"${QEMUPARAMS}\" bootparams=\"${BOOTPARAMS}\"'
+    "
   annotations:
     description: "-> run qemuarm core-image-minimal"
+
+job=clean:
+  use: kas
+  mounts:
+    - mount-build-dir
+    - mount-deploy-dir
+  entrypoint:
+    bash -c -O extglob '
+      cd /yocto-build;
+      rm -rf !(yocto-source);
+      rm -rf /yocto-deploy/*;'
+  interactive: false
+  annotations:
+    description: "-> clean yocto build and deploy directory"
+
+job=clean-all:
+  use: kas
+  mounts:
+    - mount-build-dir
+    - mount-deploy-dir
+  entrypoint:
+    bash -c '
+      rm -rf /yocto-build/* /yocto-deploy/*'
+  interactive: false
+  annotations:
+    description: "-> clean yocto build,deploy and source directory"

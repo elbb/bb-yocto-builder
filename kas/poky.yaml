@@ -1,0 +1,25 @@
+# kas config file
+
+header:
+  version: 10
+
+target: core-image-minimal
+
+repos:
+  yocto-source/poky:
+    url: "https://git.yoctoproject.org/git/poky"
+    refspec: dunfell
+    layers:
+      meta:
+      meta-poky:
+      meta-yocto-bsp:
+
+env:
+  BB_NUMBER_THREADS: ""
+  DEPLOY_DIR: "/yocto-deploy"
+  DL_DIR: "/yocto-download"
+  SSTATE_DIR: "/yocto-sstate"
+
+local_conf_header:
+  poky.yaml: |
+    EXTRA_IMAGE_FEATURES ?= "debug-tweaks"

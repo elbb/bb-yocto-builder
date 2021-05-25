@@ -3,17 +3,9 @@
 # -----------------------------------------------------------------------------
 ## Specifies the name of the building block
 bb_name: bb-yocto-builder
-## Specify the namespace for the building block image. This gets prefixed before <prefix>/<bb_name>
-### example: bb_docker_namespace: "registry:5000/elbb" results in using "registry:5000/elbb/<bb_name>"
-### "elbb" means using the docker hub, e.g. "elbb/<bb-name>"
-bb_docker_namespace: "elbb"
-## Specifies insecure docker registries, format "host:port" or "ip:port"
-bb_insecure_registries: []
-## Specify if 'latest' tags are built for `git_branch`
-bb_release_as_latest: true
 
-## Specifies the version used for bb-gitversion
-bb_gitversion_version: 0.8.3
+## Specifies the version of used images
+kas_version: 2.4
 
 # Git config
 # -----------------------------------------------------------------------------
@@ -22,5 +14,11 @@ git_source: https://github.com/elbb/bb-yocto-builder.git
 ## Specify the git branch to work with
 git_branch: main
 default_branch: main
+##
+git_source_poky: https://git.yoctoproject.org/git/poky
+git_branch_poky: dunfell
 ## This enables/disables ssl verification of the git resource
 git_skip_ssl_verification: false
+
+# Kas command args
+kas_cmd_args: poky.yaml:qemuarm.yaml

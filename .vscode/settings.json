@@ -1,6 +1,7 @@
 {
     "files.watcherExclude": {
         "**/gen/**": true,
-        "**/build/**": true,
+        "**/build/build/**": true,
+        "**/build/yocto-source": false,
     },
 }

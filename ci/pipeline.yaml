@@ -16,21 +16,21 @@ resources:
       branch: ((git_branch))
       skip_ssl_verification: ((git_skip_ssl_verification))
 
-  - name: image-bb-gitversion-tool
-    type: docker-image
+  # used as trigger only
+  - name: source-poky
+    type: git
     source:
-      repository: elbb/bb-gitversion
-      username: ((registry_user))
-      password: ((registry_password))
-      tag: ((bb_gitversion_version))
+      uri: ((git_source_poky))
+      private_key: ((privatekey))
+      branch: ((git_branch_poky))
+      skip_ssl_verification: ((git_skip_ssl_verification))
+      depth: 1
 
-  - name: image-((bb_name))
+  - name: kas
     type: docker-image
     source:
-      repository: ((bb_docker_namespace))/((bb_name))
-      username: ((registry_user))
-      password: ((registry_password))
-      insecure_registries: ((bb_insecure_registries))
+      repository: ghcr.io/siemens/kas/kas
+      tag: ((kas_version))
 
   - name: send-an-email
     type: email
@@ -49,7 +49,7 @@ resources:
       to: ((email_to))
 
 jobs:
-  - name: build-and-deploy-((bb_name))
+  - name: build-((bb_name))
     public: true
 
     on_failure:
@@ -78,45 +78,18 @@ jobs:
 
     plan:
       - in_parallel:
+          - get: kas
           - get: source
             trigger: true
-          - get: image-bb-gitversion-tool
-
-      - task: generate-version
-        image: image-bb-gitversion-tool
-        config:
-          platform: linux
-          inputs:
-            - name: source
-          outputs:
-            - name: gitversion
-          run:
-            path: /bin/bash
-            args:
-              - -exc
-              - |
-                entrypoint.sh
-          params:
-            GIT_PATH: source
-            GEN_PATH: gitversion
-            GIT_BRANCH: "((git_branch))"
-            DEFAULT_BRANCH: "((default_branch))"
-            VERBOSE: 1
-
-      - put: image-((bb_name))
-        params:
-          build: source/yocto-builder
-          dockerfile: source/yocto-builder/Dockerfile
-          tag_as_latest: ((bb_release_as_latest))
-          tag_file: gitversion/plain/BranchVersionDockerLabel
+          - get: source-poky
+            trigger: true
 
       - task: build-yocto-image
-        image: image-((bb_name))
+        image: kas
         config:
           platform: linux
           inputs:
             - name: source
-            - name: gitversion
           outputs:
             - name: yocto-build
             - name: yocto-deploy
@@ -130,14 +103,19 @@ jobs:
               - |
                 export DEPLOY_DIR=$(pwd)/yocto-deploy;
                 export DL_DIR=$(pwd)/yocto-download;
-                export POKY_SRC_DIR=$(pwd)/source/yocto/poky;
                 export SSTATE_DIR=$(pwd)/yocto-sstate;
-                export USER_ID=1000;
                 export YOCTO_BUILD_DIR=$(pwd)/yocto-build;
-                chown ${USER_ID}:${USER_ID} ${DEPLOY_DIR} ${DL_DIR} ${SSTATE_DIR} ${YOCTO_BUILD_DIR};
-                chown -R ${USER_ID}:${USER_ID} source;
-                entrypoint.sh bash -c "
-                source ./gitversion/env/gitversion.env;
-                source ./source/yocto-conf/init-build-env;
-                MACHINE=qemuarm bitbake core-image-minimal
+                export KAS_WORK_DIR=${YOCTO_BUILD_DIR};
+                export KAS_CONFIG_DIR=$(pwd)/source/kas
+                chown ${USER_ID}:${GROUP_ID} ${DEPLOY_DIR} ${DL_DIR} ${SSTATE_DIR} ${YOCTO_BUILD_DIR};
+                chown -R ${USER_ID}:${GROUP_ID} source;
+                #build
+                /kas/container-entrypoint bash -c "
+                  ${KAS_CONFIG_DIR}/kas_config.sh;
+                  cd ${YOCTO_BUILD_DIR};
+                  kas build ${KAS_CMD_ARGS}
                 "
+          params:
+            GROUP_ID: "1000"
+            KAS_CMD_ARGS: "((kas_cmd_args))"
+            USER_ID: "1000"
