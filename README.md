@@ -21,6 +21,7 @@ The following dobi resources are available:
 ./dobi.sh build-qemuarm-core-image-minimal              #build qemuarm core-image-minimal
 ./dobi.sh buildimage                                    #generate container image with all yocto build dependencies
 ./dobi.sh clean                                         #clean yocto build and deploy directory
+./dobi.sh clean-all                                     #clean yocto build, deploy and source directory
 ./dobi.sh interactive-build-shell                       #run interactive build shell
 ./dobi.sh run-qemuarm-core-image-minimal-interactive    #run qemuarm core-image-minimal
 ./dobi.sh version                                       #generate version informations (auto called by dobi.sh)
@@ -32,7 +33,7 @@ Version informations are generated automatically from git history by using build
 #### Testing
 
 ```sh
-./dobi.sh test
+./dobi.sh run-qemuarm-core-image-minimal-interactive
 ```
 will run the yocto `core-image-minimal` for target `qemuarm` in a docker container. Login as `root` without password. To exit this test environment stop the qemu machine, via
 ```
@@ -49,25 +50,20 @@ If you want to override project variables, copy `./local.env.template` to `./loc
 
 ## How to use this building block to bootstrap your yocto project.
 
-Clone this repository together with its submodules. \
-`git clone --recursive https://github.com/elbb/bb-yocto-builder.git`
+Clone this repository. \
+`git clone https://github.com/elbb/bb-yocto-builder.git`
 
-Poky and the openembedded layers are integrated as submodules in  directory `./yocto`. Use this directory to add additional needed layers.
-If you add additional or modify layers, you have to adapt `./yocto-conf/bblayers.conf` accordingly.
-
-`./yocto/version` is a small layer which includes a `os-release.bbappend` file which adds the implicit generated version information via `./dobi.sh` into the yocto image (`/etc/os-release`).
-
-In `./yocto-conf` you find a preconfigured yocto `local.conf` + `bblayers.conf` you can use as starting point for your image configuration.
-
-If you want to forward environment variables to bitbake, edit `./yocto-conf/init-build-env` and adapt `BB_ENV_EXTRAWHITE`.
+[`kas`](https://github.com/siemens/kas) is used to configure and build the yocto image.
+An example minimal configuration is located in directory `./kas`. The example uses the `poky` distribution to build `core-image-minimal` for target `qemuarm`.<br>
+Follow the upstream documentation at https://kas.readthedocs.io to configure your yocto project.
 
 To start an interactive build shell, run \
 ```bash
-./dobi.sh interactive
+./dobi.sh interactive-build-shell
 ```
 E.g. to build [`core-image-minimal`](https://wiki.yoctoproject.org/wiki/Image_Recipes#core-image-minimal) for target `qemuarm`, type:
 ```bash
-MACHINE=qemuarm bitbake core-image-minimal
+kas build poky.yaml:qemuarm.yaml
 ```
 ### Out of tree Yocto `download` or `sstate` directory
 
@@ -86,7 +82,7 @@ In further releases there will be a key value store to keep track of the users c
 Before setting the pipeline you might login first to your concourse instance `fly -t <target> login --concourse-url http://<concourse>:<port>`. See the [fly documentation](https://concourse-ci.org/fly.html) for more help.
 Upload the pipeline file with fly:
 
-    $ fly -t <target> set-pipeline -n -p bb-yocto-builder -l ci/config.yaml -l ci/credentials.yaml -l ci/email.yaml -c pipeline.yaml
+    $ fly -t <target> set-pipeline -n -p bb-yocto-builder -l ci/config.yaml -l ci/credentials.yaml -l ci/email.yaml -c ci/pipeline.yaml
 
 After successfully uploading the pipeline to concourse CI login and unpause it. After that the pipeline should be triggered by new commits on the master branch (or new tags if enabled in `pipeline.yaml`).
 
@@ -148,4 +144,4 @@ submitted for inclusion in the work by you, as defined in the Apache-2.0
 license, shall be dual licensed as above, without any additional terms or
 conditions.
 
-Copyright (c) 2020 conplement AG
+Copyright (c) 2020-2021 conplement AG

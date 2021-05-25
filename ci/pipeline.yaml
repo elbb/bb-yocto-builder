@@ -1,0 +1,121 @@
+resource_types:
+  - name: email
+    type: docker-image
+    source:
+      repository: pcfseceng/email-resource
+      username: ((registry_user))
+      password: ((registry_password))
+      tag: 1.0.19
+
+resources:
+  - name: source
+    type: git
+    source:
+      uri: ((git_source))
+      private_key: ((privatekey))
+      branch: ((git_branch))
+      skip_ssl_verification: ((git_skip_ssl_verification))
+
+  # used as trigger only
+  - name: source-poky
+    type: git
+    source:
+      uri: ((git_source_poky))
+      private_key: ((privatekey))
+      branch: ((git_branch_poky))
+      skip_ssl_verification: ((git_skip_ssl_verification))
+      depth: 1
+
+  - name: kas
+    type: docker-image
+    source:
+      repository: ghcr.io/siemens/kas/kas
+      tag: ((kas_version))
+
+  - name: send-an-email
+    type: email
+    source:
+      smtp:
+        host: ((email_smtp_host_url))
+        port: ((email_smtp_port))
+        anonymous: ((email_smtp_anonymous))
+        username: ((email_smtp_user))
+        password: ((email_smtp_pw))
+        skip_ssl_validation: ((email_smtp_skip_ssl_validation))
+        ca_cert: ((email_smtp_ca_cert))
+        host_origin: ((email_smtp_host_origin))
+        login_auth: ((email_smtp_login_auth))
+      from:  ((email_from))
+      to: ((email_to))
+
+jobs:
+  - name: build-((bb_name))
+    public: true
+
+    on_failure:
+      put: send-an-email
+      params:
+        subject_text: "ci ${BUILD_PIPELINE_NAME}: build ${BUILD_ID} failed!"
+        body_text: |
+          Oh no!
+          Build ID: "${BUILD_ID}"
+          Build Name: "${BUILD_NAME}"
+          Build Job Name: "${BUILD_JOB_NAME}"
+          Build Pipeline Name: "${BUILD_PIPELINE_NAME}"
+          ATC External URL: "${ATC_EXTERNAL_URL}"
+
+    on_success:
+      put: send-an-email
+      params:
+        subject_text: "ci ${BUILD_PIPELINE_NAME}: build ${BUILD_ID} successfully finished"
+        body_text: |
+          Yeah!
+          Build ID: "${BUILD_ID}"
+          Build Name: "${BUILD_NAME}"
+          Build Job Name: "${BUILD_JOB_NAME}"
+          Build Pipeline Name: "${BUILD_PIPELINE_NAME}"
+          ATC External URL: "${ATC_EXTERNAL_URL}"
+
+    plan:
+      - in_parallel:
+          - get: kas
+          - get: source
+            trigger: true
+          - get: source-poky
+            trigger: true
+
+      - task: build-yocto-image
+        image: kas
+        config:
+          platform: linux
+          inputs:
+            - name: source
+          outputs:
+            - name: yocto-build
+            - name: yocto-deploy
+          caches:
+            - path: yocto-download
+            - path: yocto-sstate
+          run:
+            path: /bin/bash
+            args:
+              - -exc
+              - |
+                export DEPLOY_DIR=$(pwd)/yocto-deploy;
+                export DL_DIR=$(pwd)/yocto-download;
+                export SSTATE_DIR=$(pwd)/yocto-sstate;
+                export YOCTO_BUILD_DIR=$(pwd)/yocto-build;
+                export KAS_WORK_DIR=${YOCTO_BUILD_DIR};
+                export KAS_CONFIG_DIR=$(pwd)/source/kas
+                chown ${USER_ID}:${GROUP_ID} ${DEPLOY_DIR} ${DL_DIR} ${SSTATE_DIR} ${YOCTO_BUILD_DIR};
+                chown -R ${USER_ID}:${GROUP_ID} source;
+                #build
+                /kas/container-entrypoint bash -c "
+                  ${KAS_CONFIG_DIR}/kas_config.sh;
+                  cd ${YOCTO_BUILD_DIR};
+                  kas build ${KAS_CMD_ARGS}
+                "
+          params:
+            GROUP_ID: "1000"
+            KAS_CMD_ARGS: "((kas_cmd_args))"
+            USER_ID: "1000"

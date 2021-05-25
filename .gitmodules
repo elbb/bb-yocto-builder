@@ -1,8 +1,0 @@
-[submodule "yocto/poky"]
-	path = yocto/poky
-	url = https://git.yoctoproject.org/git/poky
-	branch = dunfell
-[submodule "yocto/meta-elbb"]
-	path = yocto/meta-elbb
-	url = https://github.com/elbb/meta-elbb.git
-	branch = dunfell
